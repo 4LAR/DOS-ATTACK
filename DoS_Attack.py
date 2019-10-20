@@ -3,13 +3,15 @@
 #  [ Stolar Studio ]
 #
 
-ver = "0.1.2"
+ver = "0.1.3"
 
 import threading
 import requests
 import os
 import sys
 import configparser
+
+#threading.stack_size(64*1024)
 
 from fake_useragent import UserAgent
 
@@ -50,7 +52,7 @@ if print_logo_bool:
  |_____/ \__\___/|_| |_|\___| |_____/ \___/_____/  /_/    \_\__|\__\__,_|\___|_|\_\                                                                                                                                                                     
 """)
 else:
-    print("Stone Port Scanner")
+    print("Stone DoS Attack")
 print("Ver : "+ver)
 print('-' * 35)
 
