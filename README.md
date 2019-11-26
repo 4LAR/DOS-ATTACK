@@ -1,6 +1,6 @@
 # STONE DOS-ATTACK
 
-Version 2.3<br>
+Version 1.5<br>
 system requirements:
 <ul>
   <li>python 3.7</li>
